@@ -13,7 +13,7 @@ def label(item):
     return a str with colors of the given object
     """
     if isinstance(item, Restic):
-        return f"🔐 {label(item.repository)}"
+        return f"🔐 {Style.BRIGHT}{item.repository}{Style.RESET_ALL}"
     if isinstance(item, Path):
         if not item.exists():
             return str(item)

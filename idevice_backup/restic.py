@@ -9,6 +9,8 @@ from typing import Iterable, Iterator
 from colorama import Fore, Style
 from tqdm import tqdm
 
+from idevice_backup.ios import get_ios_device_name
+
 from .schema import File, Snapshot, Snapshots
 
 RESTIC_REPOSITORY = "RESTIC_REPOSITORY"
@@ -65,6 +67,15 @@ class Restic:
             )
         return process.stdout
 
+    def init(self):
+        self._execute(["init"], json=False, capture_output=False)
+
+    def mount(self, mnt: Path):
+        command = ["mount", str(mnt)]
+        if (device := get_ios_device_name()) is not None:
+            command += ["--host", device]
+        self._execute(command, json=False, capture_output=False)
+
     def list_snapshots(self) -> list[Snapshot]:
         return Snapshots.model_validate_json(self._execute(["snapshots"])).root
 
@@ -77,6 +88,15 @@ class Restic:
                     snapshot0 = Snapshot.model_validate_json(line)
                 else:
                     yield File.model_validate_json(line)
+
+    def backup(
+        self, root_folder: Path, include: Iterable[Path], host: str | None = None
+    ):
+        args = ["backup"]
+        if host is not None:
+            args += ["--host", host]
+        args += [str(x.relative_to(root_folder)) for x in include]
+        self._execute(args, cwd=root_folder, json=False, capture_output=False)
 
     def restore_files(
         self,
@@ -121,15 +141,3 @@ class Restic:
                 raise FileNotFoundError(f"Cannot find restored file: {new_file}")
 
         return out
-
-    def backup(
-        self, root_folder: Path, include: Iterable[Path], host: str | None = None
-    ):
-        args = ["backup"]
-        if host is not None:
-            args += ["--host", host]
-        args += [str(x.relative_to(root_folder)) for x in include]
-        self._execute(args, cwd=root_folder, json=False, capture_output=False)
-
-    def init(self):
-        self._execute(["init"], json=False, capture_output=False)

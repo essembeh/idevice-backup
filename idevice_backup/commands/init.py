@@ -11,9 +11,9 @@ def configure(parser: ArgumentParser):
     parser.set_defaults(handler=run)
 
 
-def run(args: Namespace, restic: Restic):
+def run(args: Namespace, restic: Restic):  # pylint: disable=unused-argument
     """
     Handler for subcommand
     """
-    print(f"Initialize Restic repository: {label(restic.repository)}")
+    print(f"Initialize Restic repository: {label(restic)}")
     restic.init()

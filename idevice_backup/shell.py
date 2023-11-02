@@ -20,7 +20,7 @@ SOURCE_COMMAND = {
 }
 
 
-def spawn_shell(folder: Path, ps1_prefix: str | None = None) -> int:
+def spawn_shell(folder: Path, ps1_prefix: str | None = None):
     with TemporaryDirectory() as tmp:
         source_env = Path(tmp) / ".env"
         if ps1_prefix is not None:
@@ -44,7 +44,7 @@ def spawn_shell(folder: Path, ps1_prefix: str | None = None) -> int:
                 f"{SOURCE_COMMAND.get(shell_name, '.')} {shlex.quote(str(source_env))}"
             )
 
-        def resize(*args, **kwargs) -> None:
+        def resize(*_args, **_kwargs) -> None:
             terminal = shutil.get_terminal_size()
             subshell.setwinsize(terminal.lines, terminal.columns)
 
