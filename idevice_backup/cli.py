@@ -61,7 +61,7 @@ def run():
         help=f"restic repository password, default is '{DEFAULT_PASSWORD}'",
     )
 
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(required=True)
 
     init.configure(subparsers.add_parser("init", help="init repository"))
     backup.configure(subparsers.add_parser("backup", help="backup connected idevice"))
