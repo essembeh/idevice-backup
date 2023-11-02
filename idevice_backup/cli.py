@@ -23,7 +23,7 @@ def get_restic_repository(args: Namespace) -> Restic:
     elif RESTIC_REPOSITORY in os.environ:
         repository = os.getenv(RESTIC_REPOSITORY)
     elif device is not None:
-        repository = Path.home() / ".cache" / "idevice-backup" / device
+        repository = Path.home() / ".config" / "idevice-backup" / device
     else:
         raise ValueError(
             "Cannot find repository, use --repository to specify one, one connect an iOS device"
