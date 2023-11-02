@@ -11,7 +11,7 @@ def configure(parser: ArgumentParser):
     parser.set_defaults(handler=run)
 
 
-def run(args: Namespace, restic: Restic):  # pylint: disable=unused-argument
+def run(args: Namespace, restic: Restic):
     """
     Handler for subcommand
     """

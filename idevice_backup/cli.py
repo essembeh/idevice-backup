@@ -81,7 +81,7 @@ def run():
     except KeyboardInterrupt:
         print("")
         exit(130)
-    except BaseException as error:  # pylint: disable=broad-except
+    except BaseException as error:
         print(f"{Fore.RED}ERROR: {error}{Style.RESET_ALL}")
         if args.verbose:
             traceback.print_exception(error)
