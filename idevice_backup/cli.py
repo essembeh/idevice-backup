@@ -1,8 +1,8 @@
 """
 command line interface
 """
-
 import os
+import traceback
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
@@ -40,7 +40,7 @@ def get_restic_repository(args: Namespace) -> Restic:
     assert repository is not None
     assert password is not None and len(password) > 0
 
-    return Restic(repository, password)
+    return Restic(repository, password, verbose=args.verbose)
 
 
 def run():
@@ -50,6 +50,9 @@ def run():
     parser = ArgumentParser()
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="print more details"
     )
     parser.add_argument("-r", "--repository", help="restic repository")
     parser.add_argument(
@@ -66,10 +69,10 @@ def run():
     extract.configure(
         subparsers.add_parser("extract", help="extract last snapshot photos")
     )
-    args = parser.parse_args()
 
-    restic = Proxy(lambda: get_restic_repository(args))
+    args = parser.parse_args()
     handler = args.handler
+    restic = Proxy(lambda: get_restic_repository(args))
     try:
         out = handler(args, restic)
         exit(out if isinstance(out, int) else 0)
@@ -80,4 +83,6 @@ def run():
         exit(130)
     except BaseException as error:  # pylint: disable=broad-except
         print(f"{Fore.RED}ERROR: {error}{Style.RESET_ALL}")
+        if args.verbose:
+            traceback.print_exception(error)
         exit(1)

@@ -1,8 +1,11 @@
+import shlex
 import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Generator
+
+from colorama import Fore, Style
 
 
 def get_ios_device_name() -> str | None:
@@ -19,10 +22,15 @@ def get_ios_device_name() -> str | None:
 @contextmanager
 def mount_ios_device() -> Generator[Path, None, None]:
     device = get_ios_device_name()
-    assert device is not None
+    assert device is not None, "No idevice found"
     with TemporaryDirectory(prefix=f"{device.replace(' ', '_')}_") as tmp:
         subprocess.run(["ifuse", tmp], check=True)
         try:
             yield Path(tmp)
         finally:
-            subprocess.run(["fusermount", "-u", tmp], check=False)
+            umount_command = ["fusermount", "-u", tmp]
+            umount = subprocess.run(umount_command, check=False)
+            if umount.returncode != 0:
+                print(
+                    f"Warning, could not umount: {Fore.YELLOW}{shlex.join(umount_command)}{Style.RESET_ALL}"
+                )

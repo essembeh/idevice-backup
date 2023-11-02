@@ -6,6 +6,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Iterable, Iterator
 
+from colorama import Fore, Style
 from tqdm import tqdm
 
 from .schema import File, Snapshot, Snapshots
@@ -20,6 +21,7 @@ class Restic:
     repository: str | Path
     password: str
     binary: str = os.getenv("RESTIC_BIN", "restic")
+    verbose: bool = False
 
     @cached_property
     def environ(self) -> dict[str, str]:
@@ -44,6 +46,8 @@ class Restic:
         if json:
             command.append("--json")
         command += list(args)
+        if self.verbose:
+            print(f"Execute: {Fore.YELLOW}{shlex.join(command)}{Style.RESET_ALL}")
         process = subprocess.run(
             command,
             text=True,
@@ -52,9 +56,13 @@ class Restic:
             check=False,
             cwd=cwd,
         )
-        assert (
-            process.returncode == 0
-        ), f"{shlex.join(command)} returned {process.returncode}"
+        if process.returncode != 0:
+            if self.verbose and capture_output:
+                print(Style.DIM, process.stdout, Style.RESET_ALL, sep="")
+                print(Style.DIM, Fore.RED, process.stderr, Style.RESET_ALL, sep="")
+            raise ChildProcessError(
+                f"{shlex.join(command)} returned {process.returncode}"
+            )
         return process.stdout
 
     def list_snapshots(self) -> list[Snapshot]:
