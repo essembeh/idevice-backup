@@ -9,8 +9,7 @@ from typing import Iterable, Iterator
 from colorama import Fore, Style
 from tqdm import tqdm
 
-from idevice_backup.ios import get_ios_device_name
-
+from .ios import get_ios_device_name
 from .schema import File, Snapshot, Snapshots
 
 RESTIC_REPOSITORY = "RESTIC_REPOSITORY"
