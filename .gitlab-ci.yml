@@ -1,0 +1,42 @@
+cache:
+  paths:
+    - ${CI_PROJECT_DIR}/.cache/pip
+
+.poetry.template:
+  image: python:3
+  variables:
+    PIP_CACHE_DIR: ${CI_PROJECT_DIR}/.cache/pip
+  before_script:
+    - pip install poetry
+
+python:build:
+  extends: .poetry.template
+  stage: build
+  script:
+    - poetry build
+  artifacts:
+    paths:
+      - "dist/*"
+
+python:test:
+  extends: .poetry.template
+  stage: test
+  script:
+    - poetry run coverage run -m pytest
+    - poetry run coverage report
+    - poetry run coverage xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+
+python:publish:
+  extends: .poetry.template
+  stage: deploy
+  only:
+    - tags
+  needs:
+    - python:build
+  script:
+    - poetry config repositories.gitlab "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi"
+    - poetry publish --repository gitlab -u gitlab-ci-token -p "$CI_JOB_TOKEN"
