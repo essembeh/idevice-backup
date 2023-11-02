@@ -1,10 +1,12 @@
 """
 command line interface
 """
+
 import os
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from colorama import Fore, Style
 from lazy_object_proxy import Proxy
 
 from . import __version__
@@ -68,5 +70,14 @@ def run():
 
     restic = Proxy(lambda: get_restic_repository(args))
     handler = args.handler
-    out = handler(args, restic)
-    exit(out if isinstance(out, int) else 0)
+    try:
+        out = handler(args, restic)
+        exit(out if isinstance(out, int) else 0)
+    except SystemExit:
+        pass
+    except KeyboardInterrupt:
+        print("")
+        exit(130)
+    except BaseException as error:  # pylint: disable=broad-except
+        print(f"{Fore.RED}ERROR: {error}{Style.RESET_ALL}")
+        exit(1)
