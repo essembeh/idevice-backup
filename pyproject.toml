@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "idevice-backup"
-version = "0.1.0"
+version = "0.1.1"
 description = "CLI tool to backup iDevices with Restic"
 homepage = "https://github.com/essembeh/idevice-backup"
 authors = ["Sébastien MB <seb@essembeh.org>"]
