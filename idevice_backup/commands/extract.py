@@ -1,6 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from idevice_backup.mime import is_image, is_video
+
 from ..restic import Restic
 from ..utils import (
     find_previous_snapshot,
@@ -19,9 +21,21 @@ def configure(parser: ArgumentParser):
     parser.add_argument(
         "-l", "--list", action="store_true", help="list snapshots and do nothing"
     )
+    parser.add_argument(
+        "-i",
+        "--ignore-mtime",
+        action="store_true",
+        help="ignore ctime to detect new files",
+    )
     parser.add_argument("-o", "--output", type=Path, help="folder to extract new files")
     parser.add_argument(
         "-s", "--snapshot", dest="current", help="snapshot, default is latest"
+    )
+    parser.add_argument(
+        "-a",
+        "--all",
+        action="store_true",
+        help="extract all files, not only images and videos",
     )
 
 
@@ -55,8 +69,12 @@ def run(args: Namespace, restic: Restic):
             restic.iter_files(previous_snapshot),
             restic.iter_files(current_snapshot),
             only_types=["file"],
+            ignore_mtime=args.ignore_mtime,
         ):
-            if current_file is not None:
+            if current_file is None:
+                # deleted file
+                continue
+            if args.all or is_image(current_file.path) or is_video(current_file.path):
                 new_files.append(current_file)
                 new_files_size += current_file.size or 0
                 print("   ", label(current_file))

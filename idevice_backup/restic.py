@@ -107,7 +107,7 @@ class Restic:
                 raise FileExistsError(f"File already exists: {new_file}")
             args += ["--include", str(file.path)]
             out.append(new_file)
-        self._execute(args, json=False)
+        self._execute(args, json=False, capture_output=False)
         for new_file in out:
             if not new_file.exists():
                 raise FileNotFoundError(f"Cannot find restored file: {new_file}")

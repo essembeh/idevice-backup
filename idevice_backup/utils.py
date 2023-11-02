@@ -43,6 +43,7 @@ def iter_different_files(
     previous_files: Iterator[File],
     current_files: Iterator[File],
     only_types: Iterable[str] | None = None,
+    ignore_mtime: bool = False,
 ) -> Iterator[tuple[File | None, File | None]]:
     cache = {f.path: f for f in previous_files}
     for file in current_files:
@@ -51,12 +52,14 @@ def iter_different_files(
         if file.path not in cache:
             # new file
             yield (None, file)
-        elif file != (old_file := cache[file.path]):
-            # updated file
-            yield (old_file, file)
         else:
-            # samefile
-            pass
+            old_file = cache[file.path]
+            if file.size != old_file.size:
+                # updated file: different size
+                yield (old_file, file)
+            elif not ignore_mtime and file.mtime != old_file.mtime:
+                # updated file: different date
+                yield (old_file, file)
 
 
 def find_previous_snapshot(
@@ -69,7 +72,7 @@ def find_previous_snapshot(
         if candidate.id == selected.id:
             continue
         if candidate.time < selected.time:
-            if out is None or candidate.time < out.time:
+            if out is None or candidate.time > out.time:
                 out = candidate
     return out
 

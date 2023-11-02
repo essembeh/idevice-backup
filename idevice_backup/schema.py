@@ -38,11 +38,3 @@ class File(BaseModel):
 
     def __str__(self) -> str:
         return f"[{self.file_type}] {self.name} ({self.path}): {self.size or '0'} bytes"
-
-    def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, File)
-            and self.path == other.path
-            and self.size == other.size
-            and self.mtime == other.mtime
-        )
